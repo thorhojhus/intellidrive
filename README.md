@@ -1,3 +1,5 @@
-# to launch sim with 
+# ROS2 Autonomous Robot Project
 
-ros2 my_bot launch_sim.launch.py
+I'm trying to model a RC-car with ackermann steering for simulation with Gazebo and ROS2 Humble.
+
+Goal is to control a RC-car with Lidar and Depth Sensor for autonomous driving and navigation using SLAM. 

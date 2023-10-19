@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="inertial_macros.xacro"/>
+
+  <material name="white">
+    <color rgba="1 1 1 1"/>
+  </material>
+
+  <!-- Constants for robot dimensions -->
+  <xacro:property name="wheel_radius" value="0.1"/>
+  <xacro:property name="wheel_length" value="0.2"/>
+  <xacro:property name="wheel_base" value="0.5"/>
+
+
+  <!-- Base Link -->
+  <link name="base_link">
+  </link>
+
+  <!-- Chassis Link -->
+  <joint name="chassis_joint" type="fixed">
+      <parent link="base_link"/>
+      <child link="chassis"/>
+      <origin xyz="-0.1 0 0"/>
+  </joint>
+
+  <link name="chassis">
+      <visual>
+          <origin xyz="0.15 0 0.075"/>
+          <geometry>
+              <box size="0.3 0.3 0.15"/>
+          </geometry>
+          <material name="white"/>
+      </visual>
+      <collision>
+          <origin xyz="0.15 0 0.075"/>
+          <geometry>
+              <box size="0.3 0.3 0.15"/>
+          </geometry>
+      </collision>
+      <inertial>
+          <mass value="0.5"/>
+          <origin xyz="0.15 0 0.075" rpy="0 0 0"/>
+          <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+      </inertial>
+  </link>
+
+  <gazebo reference="chassis">
+      <material>Gazebo/White</material>
+  </gazebo>
+
+  <!-- Wheels -->
+  <xacro:macro name="wheel" params="suffix">
+      <joint name="wheel_joint_${suffix}" type="continuous">
+          <parent link="chassis"/>
+          <child link="wheel_link_${suffix}"/>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <axis xyz="0 0 1"/>
+      </joint>
+
+      <link name="wheel_link_${suffix}">
+          <inertial>
+              <mass value="0.1"/>
+              <origin xyz="0 0 0" rpy="0 0 0"/>
+              <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+          </inertial>
+          <visual>
+              <origin xyz="0 0 0" rpy="0 0 0"/>
+              <geometry>
+                  <cylinder length="${wheel_length}" radius="${wheel_radius}"/>
+              </geometry>
+          </visual>
+      </link>
+  </xacro:macro>
+
+  <!-- Instantiate wheels -->
+  <xacro:wheel suffix="front_left"/>
+  <xacro:wheel suffix="front_right"/>
+  <xacro:wheel suffix="rear_left"/>
+  <xacro:wheel suffix="rear_right"/>
+
+</robot>

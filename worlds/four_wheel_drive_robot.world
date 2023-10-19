@@ -1,0 +1,29 @@
+<sdf version="1.5">
+  <world name="default">
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <model name="four_wheel_drive_robot">
+      <include>
+        <uri>model://four_wheel_drive_robot</uri>
+      </include>
+
+      <plugin name="skid_steer_drive_controller" filename="libgazebo_ros_skid_steer_drive.so">
+        <ros>
+          <namespace>/my_robot</namespace>
+          <argument>cmd_vel:=cmd_vel</argument>
+        </ros>
+        <leftJoint>wheel_joint_front_left</leftJoint>
+        <rightJoint>wheel_joint_front_right</rightJoint>
+        <wheelSeparation>${wheel_base}</wheelSeparation>
+        <wheelDiameter>${2 * wheel_radius}</wheelDiameter>
+        <torque>20</torque>
+      </plugin>
+    </model>
+  </world>
+</sdf>

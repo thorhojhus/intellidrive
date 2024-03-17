@@ -99,49 +99,20 @@ def generate_map(lidar_points: np.ndarray, global_occupancy_map: np.ndarray, xy_
         x, y, xy_resolution)
     
     global_occupancy_map = np.logical_or(occupancy_map, global_occupancy_map).astype(int)
-    plot_map = np.copy(global_occupancy_map)*255
+    plot_map = np.copy(global_occupancy_map)[:75, :75]*255
     map_surface = pygame.surfarray.make_surface(plot_map)
     return map_surface, global_occupancy_map
 
-# def raycast(start_point: Tuple[int, int], direction: Tuple[float, float], obstacles: List[pygame.Rect], max_len: int = 1000) -> float:
-#     shortest_distance = None
-#     for obstacle in obstacles:
-#         intersection_points = obstacle.clipline(start_point, start_point + direction * max_len)
-#         if intersection_points:
-#             for point in intersection_points:
-#                 distance = np.linalg.norm(np.array(start_point) - np.array(point))  
-#                 if shortest_distance is None or distance < shortest_distance:
-#                     shortest_distance = distance
-#     return shortest_distance 
-
-from numba import njit
-
-@njit(fastmath=True)
-def raycast(start_point: Tuple[int, int], direction: Tuple[float, float], obstacles: List[Tuple[int, int, int, int]], max_len: int = 1000) -> float:
+def raycast(start_point: Tuple[int, int], direction: Tuple[float, float], obstacles: List[pygame.Rect], max_len: int = 1000) -> float:
+    shortest_distance = None
     for obstacle in obstacles:
-        intersection_points = obstacle_clipline(start_point, start_point + direction * max_len, obstacle)
+        intersection_points = obstacle.clipline(start_point, start_point + direction * max_len)
         if intersection_points:
-            distance = np.linalg.norm(np.array(start_point) - np.array(intersection_points[0]))
-            return distance
-    return None
-
-@njit(fastmath=True)
-def obstacle_clipline(start_point: Tuple[int, int], end_point: Tuple[int, int], obstacle: Tuple[int, int, int, int]) -> Tuple[Tuple[int, int], Tuple[int, int]]:
-    x1, y1, x2, y2 = obstacle
-    x3, y3 = start_point
-    x4, y4 = end_point
-    den = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1)
-    if den == 0:
-        return None
-    ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / den
-    if ua < 0 or ua > 1:
-        return None
-    ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / den
-    if ub < 0 or ub > 1:
-        return None
-    x = x1 + ua * (x2 - x1)
-    y = y1 + ua * (y2 - y1)
-    return ((int(x), int(y)),)
+            for point in intersection_points:
+                distance = np.linalg.norm(np.array(start_point) - np.array(point))  
+                if shortest_distance is None or distance < shortest_distance:
+                    shortest_distance = distance
+    return shortest_distance 
 
 i = 0
 while running:
@@ -223,6 +194,7 @@ while running:
         lidar_points = simulate_lidar(box_pos, box_angle, num_points=200, max_distance=300)
         converted_lidar_points = convert_lidar_points(lidar_points, max_distance=math.sqrt(width**2+height**2)) 
         map_surface, global_occupancy_map = generate_map(converted_lidar_points, global_occupancy_map)
+        map_surface = pygame.transform.scale_by(map_surface, 2)
     
     for rect in obstacles:
         pygame.draw.rect(screen, (255, 0, 0), rect)  # Red
@@ -231,7 +203,6 @@ while running:
         pygame.draw.circle(screen, (0, 255, 0), (int(point[0]), int(point[1])), 2)  # Green dots
 
     pygame.draw.polygon(screen, white, corners)
-    #map_surface = pygame.transform.scale_by(map_surface, 2)
     screen.blit(map_surface, (0, 0))
     pygame.display.flip()
 
